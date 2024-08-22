@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Meal Planner</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+        }
+        .meal-planner {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 1400px; /* 전체적인 식단표 크기를 더욱 키움 */
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 16px; /* 더 큰 패딩으로 식단표 크기 확대 */
+            text-align: center;
+            vertical-align: top;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .meal-input {
+            width: 95%;
+            padding: 12px; /* 더 큰 입력 필드 */
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 18px; /* 입력 글자 크기를 더 키움 */
+        }
+        .meal-input:disabled {
+            background-color: #f9f9f9;
+            color: #555;
+        }
+        button {
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px; /* 버튼 크기 확대 */
+            margin-top: 10px;
+            display: none; /* 기본적으로 Add Menu 버튼을 숨김 */
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .small-btn {
+            font-size: 16px; /* Add Menu 버튼의 글자 크기 확대 */
+            padding: 8px;
+            margin-top: 5px;
+            display: none; /* 기본적으로 Add Menu 버튼을 숨김 */
+        }
+        .edit-btn {
+            display: inline-block;
+            margin-top: 20px;
+            float: right; /* Edit Meals 버튼을 오른쪽으로 정렬 */
+        }
+    </style>
+</head>
+<body>
+
+<div class="meal-planner">
+    <h2>Weekly Meal Planner</h2>
+    <table id="meal-table">
+        <tr>
+            <th>Monday</th>
+            <th>Tuesday</th>
+            <th>Wednesday</th>
+            <th>Thursday</th>
+            <th>Friday</th>
+            <th>Saturday</th>
+            <th>Sunday</th>
+        </tr>
+        <tr>
+            <td id="monday-meals">
+                <button class="small-btn" onclick="addMeal('monday')">Add Menu</button>
+            </td>
+            <td id="tuesday-meals">
+                <button class="small-btn" onclick="addMeal('tuesday')">Add Menu</button>
+            </td>
+            <td id="wednesday-meals">
+                <button class="small-btn" onclick="addMeal('wednesday')">Add Menu</button>
+            </td>
+            <td id="thursday-meals">
+                <button class="small-btn" onclick="addMeal('thursday')">Add Menu</button>
+            </td>
+            <td id="friday-meals">
+                <button class="small-btn" onclick="addMeal('friday')">Add Menu</button>
+            </td>
+            <td id="saturday-meals">
+                <button class="small-btn" onclick="addMeal('saturday')">Add Menu</button>
+            </td>
+            <td id="sunday-meals">
+                <button class="small-btn" onclick="addMeal('sunday')">Add Menu</button>
+            </td>
+        </tr>
+    </table>
+    <button id="edit-btn" class="edit-btn" onclick="toggleEdit()">Edit Meals</button>
+</div>
+
+<script>
+    let editing = false;
+
+    function toggleEdit() {
+        editing = !editing;
+        const inputs = document.querySelectorAll('.meal-input');
+        const addButtons = document.querySelectorAll('.small-btn');
+        
+        if (editing) {
+            inputs.forEach(input => input.disabled = false);
+            addButtons.forEach(button => button.style.display = 'inline-block'); // Edit mode에서 Add Menu 버튼 표시
+            document.getElementById('edit-btn').textContent = 'Save Meals';
+        } else {
+            inputs.forEach(input => input.disabled = true);
+            addButtons.forEach(button => button.style.display = 'none'); // Edit mode 해제 시 Add Menu 버튼 숨김
+            saveMeals();
+            document.getElementById('edit-btn').textContent = 'Edit Meals';
+        }
+    }
+
+    function addMeal(day) {
+        const mealDiv = document.getElementById(`${day}-meals`);
+        const newMealInput = document.createElement('input');
+        newMealInput.type = 'text';
+        newMealInput.className = 'meal-input';
+        newMealInput.disabled = !editing;
+        mealDiv.insertBefore(newMealInput, mealDiv.querySelector('button'));
+    }
+
+    function saveMeals() {
+        const meals = {};
+        const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+
+        days.forEach(day => {
+            const inputs = document.querySelectorAll(`#${day}-meals .meal-input`);
+            meals[day] = Array.from(inputs).map(input => input.value);
+        });
+
+        localStorage.setItem('weeklyMeals', JSON.stringify(meals));
+        alert('Meals saved!');
+    }
+
+    function loadMeals() {
+        const savedMeals = localStorage.getItem('weeklyMeals');
+        if (savedMeals) {
+            const meals = JSON.parse(savedMeals);
+            const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+
+            days.forEach(day => {
+                if (meals[day]) {
+                    meals[day].forEach(meal => {
+                        addMeal(day);
+                        const lastInput = document.querySelector(`#${day}-meals .meal-input:last-of-type`);
+                        lastInput.value = meal;
+                    });
+                }
+            });
+        }
+    }
+
+    window.onload = loadMeals;
+</script>
+
+</body>
+</html>

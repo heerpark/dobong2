@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom 5x5 Grid</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f9;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(5, 100px);
+            grid-template-rows: repeat(5, 100px);
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+
+        .grid-item {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: lightgray;
+            border: 2px solid black;
+            font-size: 24px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .grid-item.active {
+            background-color: lightblue;
+        }
+
+        .grid-item.selected {
+            background-color: darkblue;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .grid-input-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+
+        #positions {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            width: 100%;
+            margin-bottom: 10px;
+            transition: border-color 0.3s;
+        }
+
+        #positions:focus {
+            border-color: #007BFF;
+            outline: none;
+        }
+
+        .generate-button, .reset-button, .reenter-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s, transform 0.3s;
+            margin-top: 10px;
+        }
+
+        .generate-button {
+            background-color: #007BFF;
+            color: white;
+        }
+
+        .generate-button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        .reset-button {
+            background-color: #DC3545;
+            color: white;
+        }
+
+        .reset-button:hover {
+            background-color: #c82333;
+            transform: scale(1.05);
+        }
+
+        .reenter-button {
+            background-color: #28A745;
+            color: white;
+        }
+
+        .reenter-button:hover {
+            background-color: #218838;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div id="grid-input" class="grid-input-container">
+        <label for="positions">Enter Positions (e.g., 1 5 12): </label>
+		<br>
+        <input type="text" id="positions" placeholder="Enter numbers between 1-25">
+        <button class="generate-button" onclick="generateGrid()">Generate Grid</button>
+    </div>
+
+    <div id="grid-container" class="grid-container" style="display: none;">
+        <!-- 5x5 Grid 생성 -->
+        <div class="grid-item" id="cell-0"></div>
+        <div class="grid-item" id="cell-1"></div>
+        <div class="grid-item" id="cell-2"></div>
+        <div class="grid-item" id="cell-3"></div>
+        <div class="grid-item" id="cell-4"></div>
+        <div class="grid-item" id="cell-5"></div>
+        <div class="grid-item" id="cell-6"></div>
+        <div class="grid-item" id="cell-7"></div>
+        <div class="grid-item" id="cell-8"></div>
+        <div class="grid-item" id="cell-9"></div>
+        <div class="grid-item" id="cell-10"></div>
+        <div class="grid-item" id="cell-11"></div>
+        <div class="grid-item" id="cell-12"></div>
+        <div class="grid-item" id="cell-13"></div>
+        <div class="grid-item" id="cell-14"></div>
+        <div class="grid-item" id="cell-15"></div>
+        <div class="grid-item" id="cell-16"></div>
+        <div class="grid-item" id="cell-17"></div>
+        <div class="grid-item" id="cell-18"></div>
+        <div class="grid-item" id="cell-19"></div>
+        <div class="grid-item" id="cell-20"></div>
+        <div class="grid-item" id="cell-21"></div>
+        <div class="grid-item" id="cell-22"></div>
+        <div class="grid-item" id="cell-23"></div>
+        <div class="grid-item" id="cell-24"></div>
+    </div>
+	
+    <button id="resetButton" class="reset-button" style="display: none;" onclick="resetSelection()">Reset Selection</button>
+    <button id="reenterButton" class="reenter-button" style="display: none;" onclick="reenterPositions()">Re-enter Positions</button>
+
+    <script>
+        let selectedCount = 0;
+        const selectedCells = [];
+
+        function generateGrid() {
+            const positions = document.getElementById('positions').value.split(' ').map(Number);
+            const gridContainer = document.getElementById('grid-container');
+            const cells = document.querySelectorAll('.grid-item');
+
+            // 모든 셀 초기화
+            cells.forEach(cell => {
+                cell.classList.remove('active');
+                cell.classList.remove('selected');
+                cell.innerText = '';
+                cell.style.backgroundColor = 'lightgray';
+            });
+
+            // 사용자가 입력한 위치를 기반으로 활성화
+            positions.forEach(pos => {
+                if (pos >= 1 && pos <= 25) {
+                    const cellIndex = pos - 1;
+                    const cell = document.getElementById(`cell-${cellIndex}`);
+                    if (cell) {
+                        cell.classList.add('active');
+                        cell.style.backgroundColor = 'lightblue'; // 연한 파란색으로 표시
+                        cell.onclick = function() { selectCell(cell); };
+                    }
+                }
+            });
+
+            gridContainer.style.display = 'grid';
+            document.getElementById('resetButton').style.display = 'block';
+            document.getElementById('reenterButton').style.display = 'block';
+            document.getElementById('grid-input').style.display = 'none';
+        }
+
+        function selectCell(cell) {
+            if (cell.classList.contains('selected')) {
+                // 선택 해제
+                const index = selectedCells.indexOf(cell);
+                selectedCells.splice(index, 1);
+                selectedCount--;
+                cell.classList.remove('selected');
+                cell.style.backgroundColor = 'lightblue'; // 다시 연한 파란색으로
+                cell.innerText = '';
+                
+                // 이후 순서를 재정렬
+                selectedCells.forEach((cell, i) => {
+                    cell.innerText = i + 1;
+                });
+            } else {
+                // 선택
+                selectedCount++;
+                cell.classList.add('selected');
+                cell.style.backgroundColor = 'darkblue'; // 진한 파란색으로 선택된 상태 표시
+                cell.innerText = selectedCount;
+                selectedCells.push(cell);
+            }
+        }
+
+        function resetSelection() {
+            selectedCount = 0;
+            selectedCells.length = 0;
+            const cells = document.querySelectorAll('.grid-item');
+            cells.forEach(cell => {
+                if (cell.classList.contains('active')) {
+                    cell.classList.remove('selected');
+                    cell.style.backgroundColor = 'lightblue';
+                    cell.innerText = '';
+                }
+            });
+        }
+
+        function reenterPositions() {
+            resetSelection();
+            const cells = document.querySelectorAll('.grid-item');
+            cells.forEach(cell => {
+                cell.classList.remove('active');
+                cell.style.backgroundColor = 'lightgray';
+                cell.innerText = '';
+                cell.onclick = null;
+            });
+
+            document.getElementById('grid-container').style.display = 'none';
+            document.getElementById('resetButton').style.display = 'none';
+            document.getElementById('reenterButton').style.display = 'none';
+            document.getElementById('grid-input').style.display = 'flex';
+        }
+    </script>
+</body>
+</html>
